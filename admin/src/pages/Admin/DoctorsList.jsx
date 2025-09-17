@@ -14,7 +14,7 @@ const DoctorsList = () => {
     if (aToken) {
       loadDoctors()
     }
-}, [aToken])
+  }, [aToken])
 
   const loadDoctors = async () => {
     setLoading(true)
@@ -36,12 +36,20 @@ const DoctorsList = () => {
     }
   }
 
-  const specialities = ['all', ...new Set(doctors.map(doc => doc.speciality))]
+  // Build specialities list safely
+  const specialities = [
+    'all',
+    ...Array.from(new Set(doctors.map(doc => doc.speciality || 'Unknown')))
+  ]
 
   const filteredDoctors = doctors.filter(doctor => {
-    const matchesSearch = doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doctor.speciality.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesSpeciality = filterSpeciality === 'all' || doctor.speciality === filterSpeciality
+    const name = doctor.name || ''
+    const speciality = doctor.speciality || ''
+    const matchesSearch =
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      speciality.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSpeciality =
+      filterSpeciality === 'all' || speciality === filterSpeciality
     return matchesSearch && matchesSpeciality
   })
 
@@ -107,8 +115,8 @@ const DoctorsList = () => {
             >
               <div className="relative">
                 <img
-                  src={doctor.image}
-                  alt={doctor.name}
+                  src={doctor.image || 'https://via.placeholder.com/400x300'}
+                  alt={doctor.name || 'Doctor'}
                   className="w-full h-48 object-cover"
                 />
                 <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${
@@ -119,21 +127,21 @@ const DoctorsList = () => {
               </div>
               
               <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">{doctor.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">{doctor.speciality}</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">{doctor.name || 'Unknown'}</h3>
+                <p className="text-sm text-gray-600 mb-2">{doctor.speciality || 'General'}</p>
                 
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-500">
                     <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    {doctor.experience} years experience
+                    {doctor.experience || 0} years experience
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
                     <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    {currency}{doctor.fees} per consultation
+                    {currency}{doctor.fees || 0} per consultation
                   </div>
                 </div>
 
@@ -149,10 +157,10 @@ const DoctorsList = () => {
                     <span className="ms-3 text-sm font-medium text-gray-700">Available</span>
                   </label>
                 </div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
       )}
 
       {/* Empty State */}

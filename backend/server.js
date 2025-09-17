@@ -30,7 +30,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Configure CORS
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174', process.env.FRONTEND_URL].filter(Boolean),
+  origin: ['http://localhost:5173', 'http://localhost:5174','https://extraordinary-gaufre-2fb3ba.netlify.app/', process.env.FRONTEND_URL].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'atoken', 'dtoken', 'token'],

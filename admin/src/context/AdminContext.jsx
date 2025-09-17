@@ -280,4 +280,122 @@ const AdminContextProvider = (props) => {
                 'reasonForVisit',
                 'diagnosis',
                 'treatment',
-                'currentClinical
+                'currentClinicalNotes'
+            ];
+            for (let field of requiredFields) {
+                if (!recordData[field]) {
+                    throw new Error(`Field ${field} is required`);
+                }
+            }
+            const { data } = await axios.post('/api/admin/clinical-records', { patientId, ...recordData });
+            if (data.success) {
+                toast.success(data.message);
+                return data.record;
+            } else {
+                throw new Error(data.message || 'Failed to add clinical record');
+            }
+        } catch (error) {
+            handleError(error);
+            throw error;
+        }
+    };
+
+    const updateClinicalRecord = async (recordId, updatedData) => {
+        try {
+            ensureTokenSet();
+            const { data } = await axios.put(`/api/admin/clinical-records/${recordId}`, updatedData);
+            if (data.success) {
+                toast.success(data.message);
+                return data.record;
+            } else {
+                throw new Error(data.message || 'Failed to update record');
+            }
+        } catch (error) {
+            handleError(error);
+            throw error;
+        }
+    };
+
+    const deleteClinicalRecord = async (recordId) => {
+        try {
+            ensureTokenSet();
+            const { data } = await axios.delete(`/api/admin/clinical-records/${recordId}`);
+            if (data.success) {
+                toast.success(data.message);
+            } else {
+                throw new Error(data.message || 'Failed to delete record');
+            }
+        } catch (error) {
+            handleError(error);
+            throw error;
+        }
+    };
+
+    const createBill = async (billData) => {
+        try {
+            ensureTokenSet();
+            const { data } = await axios.post('/api/admin/bills', billData);
+            if (data.success) {
+                toast.success(data.message);
+                return data.bill;
+            } else {
+                throw new Error(data.message || 'Failed to create bill');
+            }
+        } catch (error) {
+            handleError(error);
+            throw error;
+        }
+    };
+
+    const getAllBills = async () => {
+        try {
+            ensureTokenSet();
+            const { data } = await axios.get('/api/admin/bills');
+            if (data.success) {
+                return data.bills.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else {
+                throw new Error(data.message || 'Failed to fetch bills');
+            }
+        } catch (error) {
+            handleError(error);
+            throw error;
+        }
+    };
+
+    const handleError = (error) => {
+        console.error(error);
+        toast.error(error.response?.data?.message || error.message || 'Something went wrong');
+    };
+
+    return (
+        <AdminContext.Provider value={{
+            aToken,
+            setAToken,
+            backendUrl,
+            doctors,
+            appointments,
+            dashData,
+            patients,
+            clinicalRecords,
+            isInitialized,
+            getAllDoctors,
+            changeAvailability,
+            getAllAppointments,
+            cancelAppointment,
+            getDashData,
+            getAllPatients,
+            getPatientDetails,
+            getPatientClinicalRecords,
+            addClinicalRecord,
+            updateClinicalRecord,
+            deleteClinicalRecord,
+            searchPatients,
+            createBill,
+            getAllBills
+        }}>
+            {props.children}
+        </AdminContext.Provider>
+    );
+};
+
+export default AdminContextProvider;

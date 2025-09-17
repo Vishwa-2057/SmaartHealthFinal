@@ -9,7 +9,7 @@ import { RiStethoscopeLine, RiMentalHealthLine } from 'react-icons/ri'
 import { FaSortAmountDown } from 'react-icons/fa'
 import BookingModal from '../components/BookingModal'
 
-const Doctors = ({ openAppointmentModal }) => {
+const Doctors = () => {
     const { currencySymbol } = useContext(AppContext)
     const [searchTerm, setSearchTerm] = useState('')
     const [specialty, setSpecialty] = useState('')
@@ -22,6 +22,14 @@ const Doctors = ({ openAppointmentModal }) => {
     const [bookedDoctors, setBookedDoctors] = useState(new Set())
     const [showBookingModal, setShowBookingModal] = useState(false)
     const [selectedDoctor, setSelectedDoctor] = useState(null)
+    const [bookingForm, setBookingForm] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        date: '',
+        message: ''
+    })
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     // Fetch doctors from backend
     useEffect(() => {
@@ -40,35 +48,31 @@ const Doctors = ({ openAppointmentModal }) => {
                 toast.error('Failed to load doctors')
             }
         }
-
         fetchDoctors()
     }, [])
 
-    // Handle opening booking modal
     const handleBookAppointment = (doctor) => {
-        setSelectedDoctor(doctor);
-        setShowBookingModal(true);
+        setSelectedDoctor(doctor)
+        setShowBookingModal(true)
         setBookingForm({
             name: '',
             email: '',
             phone: '',
             date: '',
             message: ''
-        });
-    };
+        })
+    }
 
-    // Handle form input changes
     const handleFormChange = (e) => {
         setBookingForm({
             ...bookingForm,
             [e.target.name]: e.target.value
-        });
-    };
+        })
+    }
 
-    // Handle form submission
     const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
+        e.preventDefault()
+        setIsSubmitting(true)
 
         try {
             const appointmentData = {
@@ -78,12 +82,12 @@ const Doctors = ({ openAppointmentModal }) => {
                     phone: bookingForm.phone,
                     location: 'Center 1',
                     message: bookingForm.message,
-                    speciality: selectedDoctor.speciality,
+                    speciality: selectedDoctor?.speciality || '',
                     date: bookingForm.date
                 },
                 docData: {
-                    name: selectedDoctor.name,
-                    speciality: selectedDoctor.speciality,
+                    name: selectedDoctor?.name || '',
+                    speciality: selectedDoctor?.speciality || '',
                     location: 'Center 1'
                 },
                 amount: 0,
@@ -93,47 +97,46 @@ const Doctors = ({ openAppointmentModal }) => {
                 payment: false,
                 isCompleted: false,
                 paymentDetails: null
-            };
+            }
 
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/appointment-booking/book`, appointmentData);
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/appointment-booking/book`, appointmentData)
             
             if (response.data.success) {
-                setBookedDoctors(prev => new Set([...prev, selectedDoctor._id]));
-                setShowBookingModal(false);
-                toast.success(`Hello ${bookingForm.name}! Your appointment has been booked successfully. Email confirmation sent.`);
+                setBookedDoctors(prev => new Set([...prev, selectedDoctor._id]))
+                setShowBookingModal(false)
+                toast.success(`Hello ${bookingForm.name}! Your appointment has been booked successfully. Email confirmation sent.`)
             } else {
-                toast.error('Failed to book appointment');
+                toast.error('Failed to book appointment')
             }
         } catch (error) {
-            console.error('Booking error:', error);
-            toast.error('Failed to book appointment');
+            console.error('Booking error:', error)
+            toast.error('Failed to book appointment')
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false)
         }
-    };
+    }
 
-    // Close modal
     const closeBookingModal = () => {
-        setShowBookingModal(false);
-        setSelectedDoctor(null);
+        setShowBookingModal(false)
+        setSelectedDoctor(null)
         setBookingForm({
             name: '',
             email: '',
             phone: '',
             date: '',
             message: ''
-        });
-    };
+        })
+    }
 
-    // Get unique specialties from doctors
-    const specialties = ['All Specialties', ...new Set(doctors.map(doctor => doctor.speciality))]
+    const specialties = ['All Specialties', ...new Set(doctors.map(doctor => doctor.speciality).filter(Boolean))]
 
-    // Sort and filter doctors
     const getSortedAndFilteredDoctors = () => {
         let filtered = doctors.filter(doctor => {
-            const matchesSearch = doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                doctor.speciality.toLowerCase().includes(searchTerm.toLowerCase())
-            const matchesSpecialty = !specialty || doctor.speciality === specialty
+            const name = doctor.name || ''
+            const speciality = doctor.speciality || ''
+            const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  speciality.toLowerCase().includes(searchTerm.toLowerCase())
+            const matchesSpecialty = !specialty || speciality === specialty
             return matchesSearch && matchesSpecialty
         })
 
@@ -141,12 +144,10 @@ const Doctors = ({ openAppointmentModal }) => {
             let comparison = 0
             switch (sortBy) {
                 case 'name':
-                    comparison = a.name.localeCompare(b.name)
-                    break
-                // Removed fees sorting
+                    comparison = (a.name || '').localeCompare(b.name || '')
                     break
                 case 'experience':
-                    comparison = parseInt(a.experience) - parseInt(b.experience)
+                    comparison = parseInt(a.experience || '0') - parseInt(b.experience || '0')
                     break
                 default:
                     comparison = 0
@@ -182,7 +183,6 @@ const Doctors = ({ openAppointmentModal }) => {
     return (
         <div className="min-h-screen bg-gray-50 py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
                         <RiMentalHealthLine className="text-primary" />
@@ -193,11 +193,8 @@ const Doctors = ({ openAppointmentModal }) => {
                     </p>
                 </div>
 
-                {/* Search, Sort and Filters */}
                 <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-                
                     <div className="flex flex-col md:flex-row gap-4 items-center">
-                        {/* Search */}
                         <div className="w-full md:w-5/6 relative">
                             <input
                                 type="text"
@@ -208,17 +205,10 @@ const Doctors = ({ openAppointmentModal }) => {
                             />
                             <HiOutlineSearch className="absolute left-3 top-3 text-gray-400" />
                         </div>
-
-                        {/* Sort and Filters */}
                         <div className="flex items-center gap-2">
-                           
-                           
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className="inline-flex items-center justify-center gap-3 px-6 py-3 
-                                         bg-primary text-white 
-                                         rounded-lg font-medium hover:bg-primary/90
-                                         transition-all duration-300"
+                                className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all duration-300"
                             >
                                 <HiOutlineAdjustments className="w-5 h-5" />
                                 <span>Filters</span>
@@ -226,10 +216,7 @@ const Doctors = ({ openAppointmentModal }) => {
                         </div>
                     </div>
 
-                    {/* Expandable Filters */}
-                    <div
-                        className={`overflow-hidden transition-all duration-200 ${showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
-                    >
+                    <div className={`overflow-hidden transition-all duration-200 ${showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="pt-4 mt-4 border-t">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -251,10 +238,8 @@ const Doctors = ({ openAppointmentModal }) => {
                     </div>
                 </div>
 
-                {/* Doctors Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                    {filteredDoctors.map((doctor, index) => (
+                    {filteredDoctors.map((doctor) => (
                         <div
                             key={doctor._id}
                             className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100"
@@ -262,77 +247,56 @@ const Doctors = ({ openAppointmentModal }) => {
                             <div className="relative aspect-[4/3] overflow-hidden">
                                 <img
                                     src={doctor.image || 'https://placehold.co/300x200?text=Doctor'}
-                                    alt={doctor.name}
+                                    alt={doctor.name || 'Doctor'}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-                                    <div className="absolute bottom-4 left-4">
-                                        <div className="flex items-center gap-2 text-white">
-                                            <RiStethoscopeLine />
-                                            <span className="font-medium">{doctor.speciality}</span>
-                                        </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                            </div>
+                            <div className="p-6">
+                                <h3 className="text-xl font-semibold text-gray-900 mb-1">{doctor.name || 'Unknown Doctor'}</h3>
+                                <p className="text-sm text-gray-600 mb-4">{doctor.speciality || 'General'}</p>
+                                <div className="flex flex-wrap gap-3 mb-4 text-sm text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                        <HiOutlineLocationMarker className="w-4 h-4" />
+                                        Center 1
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <HiOutlineClock className="w-4 h-4" />
+                                        {doctor.experience || 0} yrs
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="p-4">
-                                <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
-                                    {doctor.name}
-                                </h3>
-                                <p className="text-sm text-primary font-medium mt-1">
-                                    {doctor.speciality}
-                                </p>
-                                
-                                <div className="mt-3 space-y-2">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <HiOutlineClock className="text-primary" />
-                                            <span>{doctor.experience} Experience</span>
-                                        </div>
-                                </div>
-
-                                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                                        {bookedDoctors.has(doctor._id) ? (
-                                            <button
-                                                className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium cursor-not-allowed"
-                                                disabled
-                                            >
-                                                ✓ Appointment Booked
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg font-medium hover:bg-primary/90 transition-all shadow-sm hover:shadow-md"
-                                                onClick={() => {
-                                                    setSelectedDoctor(doctor)
-                                                    setShowBookingModal(true)
-                                                }}
-                                            >
-                                                Book Now
-                                            </button>
-                                        )}
+                                <div className="flex justify-between items-center">
+                                    <span className="text-primary font-bold text-lg">
+                                        {currencySymbol}{doctor.fee || 0}
+                                    </span>
+                                    <button
+                                        onClick={() => handleBookAppointment(doctor)}
+                                        disabled={bookedDoctors.has(doctor._id)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                                            bookedDoctors.has(doctor._id)
+                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                : 'bg-primary text-white hover:bg-primary/90'
+                                        }`}
+                                    >
+                                        {bookedDoctors.has(doctor._id) ? 'Booked' : 'Book'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-
-                {/* No Results Message */}
-                {filteredDoctors.length === 0 && (
-                    <div className="text-center py-12">
-                        <RiMentalHealthLine className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">No doctors found matching your criteria.</p>
-                    </div>
-                )}
-
-                {/* Booking Modal */}
-                <BookingModal 
-                    isOpen={showBookingModal}
-                    onClose={() => setShowBookingModal(false)}
-                    doctorInfo={selectedDoctor}
-                    onBookingSuccess={(doctorId) => {
-                        setBookedDoctors(prev => new Set([...prev, doctorId]));
-                    }}
-                />
             </div>
+
+            {showBookingModal && selectedDoctor && (
+                <BookingModal
+                    doctor={selectedDoctor}
+                    bookingForm={bookingForm}
+                    handleFormChange={handleFormChange}
+                    handleFormSubmit={handleFormSubmit}
+                    closeBookingModal={closeBookingModal}
+                    isSubmitting={isSubmitting}
+                />
+            )}
         </div>
     )
 }

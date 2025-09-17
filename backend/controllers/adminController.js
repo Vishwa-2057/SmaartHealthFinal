@@ -445,70 +445,7 @@ const getPatientDetails = catchAsyncErrors(async (req, res) => {
             });
         }
 
-        // Get appointments for this patient
-        const appointments = await appointmentModel.find({
-            $or: [
-                { userId: patientId },
-                { patient: patientId }
-            ]
-        })
-        .populate('docId', 'name speciality')
-        .sort({ date: -1 });
-
-        // Get clinical records for this patient
-        const clinicalRecords = await clinicalRecordModel.find({
-            patient: patientId
-        })
-        .populate('doctor', 'name speciality')
-        .sort({ createdAt: -1 });
-
-        // Transform the data based on the source
-        const transformedPatient = {
-            _id: patient._id,
-            patientName: source === 'user' ? patient.name : patient.patientName,
-            name: source === 'user' ? patient.name : patient.patientName,
-            email: patient.email,
-            phone: patient.phone,
-            gender: patient.gender,
-            dateOfBirth: patient.dateOfBirth || patient.dob,
-            bloodGroup: patient.bloodGroup,
-            address: patient.address,
-            uhid: source === 'patient' ? patient.uhid : undefined,
-            medicalInfo: patient.medicalInfo || {},
-            appointments: appointments.map(app => ({
-                _id: app._id,
-                docId: app.docId?._id,
-                doctorName: app.docId?.name || 'Unknown Doctor',
-                speciality: app.docId?.speciality || 'Unknown',
-                slotDate: app.slotDate,
-                slotTime: app.slotTime,
-                isCompleted: app.isCompleted,
-                cancelled: app.cancelled,
-                payment: app.payment
-            })),
-            clinicalRecords: clinicalRecords.map(record => ({
-                _id: record._id,
-                doctorName: record.doctor?.name || 'Unknown Doctor',
-                speciality: record.doctor?.speciality || 'Unknown',
-                notes: record.notes,
-                createdAt: record.createdAt
-            }))
-        };
-
-        res.status(200).json({
-            success: true,
-            patient: transformedPatient,
-            source
-        });
-    } catch (error) {
-        console.error('Error in getPatientDetails:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-            error: error.message
-        });
-    }
-});
+        
 
         // Get appointments for this patient
         const appointments = await appointmentModel.find({ 

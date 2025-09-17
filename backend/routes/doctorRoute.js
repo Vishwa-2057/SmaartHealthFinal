@@ -1,4 +1,7 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { loginDoctor, appointmentsDoctor, appointmentCancel, doctorList, changeAvailablity, appointmentComplete, doctorDashboard, doctorProfile, updateDoctorProfile, getPatients } from '../controllers/doctorController.js';
 import { createPrescription, getPatientPrescriptions, getDoctorPrescriptions, updatePrescription, getScheduledPatients, getPatientDetails, getPatientVitals } from '../controllers/prescriptionController.js';
 import authDoctor from '../middleware/authDoctor.js';
@@ -10,35 +13,56 @@ import doctorModel from '../models/doctorModel.js';
 
 const doctorRouter = express.Router();
 
-doctorRouter.post("/login", loginDoctor)
-doctorRouter.get("/patients", authDoctor, getPatients)
-doctorRouter.post("/cancel-appointment", authDoctor, appointmentCancel)
-doctorRouter.get("/appointments", authDoctor, appointmentsDoctor)
-doctorRouter.get("/list", doctorList)
-doctorRouter.post("/change-availability", authDoctor, changeAvailablity)
-doctorRouter.post("/complete-appointment", authDoctor, appointmentComplete)
-doctorRouter.get("/dashboard", authDoctor, doctorDashboard)
-doctorRouter.get("/profile", authDoctor, doctorProfile)
-doctorRouter.post("/update-profile", authDoctor, updateDoctorProfile)
+// Setup multer for file uploads
+const uploadDir = path.join(process.cwd(), 'uploads');
+
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+// Routes
+doctorRouter.post("/login", loginDoctor);
+doctorRouter.get("/patients", authDoctor, getPatients);
+doctorRouter.post("/cancel-appointment", authDoctor, appointmentCancel);
+doctorRouter.get("/appointments", authDoctor, appointmentsDoctor);
+doctorRouter.get("/list", doctorList);
+doctorRouter.post("/change-availability", authDoctor, changeAvailablity);
+doctorRouter.post("/complete-appointment", authDoctor, appointmentComplete);
+doctorRouter.get("/dashboard", authDoctor, doctorDashboard);
+doctorRouter.get("/profile", authDoctor, doctorProfile);
+
+// Use multer middleware for image uploads when updating doctor profile
+doctorRouter.post("/update-profile", authDoctor, upload.single('image'), updateDoctorProfile);
 
 // Prescription and consultation routes
-doctorRouter.post("/prescription", authDoctor, createPrescription)
-doctorRouter.get("/prescriptions", authDoctor, getDoctorPrescriptions)
-doctorRouter.get("/patient-prescriptions/:patientId", authDoctor, getPatientPrescriptions)
-doctorRouter.put("/prescription/:prescriptionId", authDoctor, updatePrescription)
-doctorRouter.get("/scheduled-patients", authDoctor, getScheduledPatients)
-doctorRouter.get("/vitals/patient/:patientId", authDoctor, getPatientVitals)
+doctorRouter.post("/prescription", authDoctor, createPrescription);
+doctorRouter.get("/prescriptions", authDoctor, getDoctorPrescriptions);
+doctorRouter.get("/patient-prescriptions/:patientId", authDoctor, getPatientPrescriptions);
+doctorRouter.put("/prescription/:prescriptionId", authDoctor, updatePrescription);
+doctorRouter.get("/scheduled-patients", authDoctor, getScheduledPatients);
+doctorRouter.get("/vitals/patient/:patientId", authDoctor, getPatientVitals);
 
 // Add patient details endpoint
 doctorRouter.get("/patient-details/:patientId", authDoctor, async (req, res) => {
     try {
         const { patientId } = req.params;
         
-        // Try to find in userModel first
         let patient = await userModel.findById(patientId).select('-password');
         let source = 'user';
         
-        // If not found in userModel, try Patient
         if (!patient) {
             patient = await Patient.findById(patientId);
             source = 'patient';
@@ -51,7 +75,6 @@ doctorRouter.get("/patient-details/:patientId", authDoctor, async (req, res) => 
             });
         }
 
-        // Get appointments for this patient
         const appointments = await appointmentModel.find({ 
             $or: [
                 { userId: patientId },
@@ -65,7 +88,6 @@ doctorRouter.get("/patient-details/:patientId", authDoctor, async (req, res) => 
         })
         .sort({ date: -1 });
 
-        // Get clinical records for this patient
         const clinicalRecords = await clinicalRecordModel.find({
             patient: patientId
         })
@@ -76,7 +98,6 @@ doctorRouter.get("/patient-details/:patientId", authDoctor, async (req, res) => 
         })
         .sort({ createdAt: -1 });
 
-        // Transform the data based on the source
         const transformedPatient = {
             _id: patient._id,
             patientName: source === 'user' ? patient.name : patient.patientName,

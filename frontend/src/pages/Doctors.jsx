@@ -27,7 +27,7 @@ const Doctors = ({ openAppointmentModal }) => {
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/doctor/list`)
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}api/doctor/list`)
                 if (response.data.success) {
                     setDoctors(response.data.doctors)
                 } else {

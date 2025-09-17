@@ -2,8 +2,27 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { loginDoctor, appointmentsDoctor, appointmentCancel, doctorList, changeAvailablity, appointmentComplete, doctorDashboard, doctorProfile, updateDoctorProfile, getPatients } from '../controllers/doctorController.js';
-import { createPrescription, getPatientPrescriptions, getDoctorPrescriptions, updatePrescription, getScheduledPatients, getPatientDetails, getPatientVitals } from '../controllers/prescriptionController.js';
+import { 
+    loginDoctor, 
+    appointmentsDoctor, 
+    appointmentCancel, 
+    doctorList, 
+    changeAvailablity, 
+    appointmentComplete, 
+    doctorDashboard, 
+    doctorProfile, 
+    updateDoctorProfile, 
+    getPatients 
+} from '../controllers/doctorController.js';
+import { 
+    createPrescription, 
+    getPatientPrescriptions, 
+    getDoctorPrescriptions, 
+    updatePrescription, 
+    getScheduledPatients, 
+    getPatientDetails, 
+    getPatientVitals 
+} from '../controllers/prescriptionController.js';
 import authDoctor from '../middleware/authDoctor.js';
 import userModel from '../models/userModel.js';
 import Patient from '../models/Patient.js';
@@ -18,7 +37,7 @@ const uploadDir = path.join(process.cwd(), 'uploads');
 
 // Ensure uploads directory exists
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
+    fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
@@ -27,7 +46,8 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + '-' + file.originalname);
+        const ext = path.extname(file.originalname);
+        cb(null, uniqueSuffix + ext);
     }
 });
 

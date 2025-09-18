@@ -232,7 +232,7 @@ const Contact = () => {
                         </div>
                         <div className="rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.2155730122!2d-73.987844924164!3d40.757985971389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes%20Square!5e0!3m2!1sen!2sus!4v1710000000000!5m2!1sen!2sus"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7773.479238243908!2d80.24852926581238!3d13.05223892991429!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5267089cfab3ab%3A0x53cb1a750d69145f!2sSMAART%20HEALTHCARE!5e0!3m2!1sen!2sin!4v1758168372611!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
                                 width="100%"
                                 height="400"
                                 style={{ border: 0 }}

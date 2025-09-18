@@ -31,7 +31,7 @@ import doctorModel from '../models/doctorModel.js';
 
 const adminRouter = express.Router();
 // Billing
-adminRouter.post('/bill', authAdmin, createBill);
+adminRouter.post('/bills', authAdmin, createBill);
 adminRouter.get('/bills', authAdmin, getAllBills);
 // Schedule appointment with doctor
 adminRouter.put('/schedule-appointment/:appointmentId', authAdmin, scheduleAppointmentWithDoctor);

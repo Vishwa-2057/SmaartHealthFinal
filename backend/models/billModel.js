@@ -27,7 +27,13 @@ const billSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    address: { type: String },
+    address: {
+    line1: { type: String, required: true },
+    line2: { type: String },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zipCode: { type: String, required: true }
+    },
     phone: { type: String },
     email: { type: String },
     remarks: { type: String },

@@ -143,7 +143,7 @@ const AddPatient = () => {
       form.append('email', formData.email);
       form.append('password', formData.password);
       form.append('phone', formData.phone);
-      form.append('dateOfBirth', formData.dateOfBirth.split('-').reverse().join('_'));
+      form.append('dateOfBirth', formData.dateOfBirth);
       form.append('gender', formData.gender);
       form.append('bloodGroup', formData.bloodGroup);
       form.append('occupation', formData.occupation);
@@ -157,7 +157,10 @@ const AddPatient = () => {
       }
       form.append('insuranceDetails', JSON.stringify(formData.insuranceDetails));
       form.append('consent', JSON.stringify(formData.consent));
-      form.append('emergencyContact', JSON.stringify(formData.emergencyContact));
+      form.append('emergencyContact[name]', formData.emergencyContact.name);
+      form.append('emergencyContact[phone]', formData.emergencyContact.phone);
+      form.append('emergencyContact[relationship]', formData.emergencyContact.relationship);
+
       if (formData.photograph) {
         form.append('photograph', formData.photograph);
       }

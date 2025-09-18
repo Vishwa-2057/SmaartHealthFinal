@@ -387,16 +387,15 @@ const addPatient = async (req, res) => {
             bloodGroup,
             occupation,
             address,
-            medicalInfo: {
-                emergencyContact
-            },
+            emergencyContact,
             insuranceStatus: insuranceStatus || 'Not Insured',
             organDonorStatus: organDonorStatus || 'No',
             photograph: photographUrl,
             governmentId,
             insuranceDetails,
             consent,
-            referringDoctor
+            referringDoctor,
+            password: hashedPassword
         });
 
         await patient.save();
